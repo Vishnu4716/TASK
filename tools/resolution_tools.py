@@ -1,10 +1,25 @@
-from database import save_action
+from database import save_action, action_exists
 
 
 def issue_refund(request_id, amount):
-    """Tool: persist a refund action."""
+    if action_exists(request_id, "REFUND"):
+        return {
+            "action_type": "REFUND",
+            "amount": round(amount, 2),
+            "status": "ALREADY_EXECUTED",
+            "details": "Refund was already executed for this request.",
+        }
+
     details = f"Refund issued for ${amount:.2f}."
-    save_action(request_id, "REFUND", amount, "EXECUTED", details)
+
+    save_action(
+        request_id,
+        "REFUND",
+        amount,
+        "EXECUTED",
+        details,
+    )
+
     return {
         "action_type": "REFUND",
         "amount": round(amount, 2),
@@ -14,9 +29,24 @@ def issue_refund(request_id, amount):
 
 
 def issue_credit(request_id, amount):
-    """Tool: persist a fare-credit action."""
+    if action_exists(request_id, "FARE_CREDIT"):
+        return {
+            "action_type": "FARE_CREDIT",
+            "amount": round(amount, 2),
+            "status": "ALREADY_EXECUTED",
+            "details": "Fare credit was already issued.",
+        }
+
     details = f"Fare credit issued for ${amount:.2f}."
-    save_action(request_id, "FARE_CREDIT", amount, "EXECUTED", details)
+
+    save_action(
+        request_id,
+        "FARE_CREDIT",
+        amount,
+        "EXECUTED",
+        details,
+    )
+
     return {
         "action_type": "FARE_CREDIT",
         "amount": round(amount, 2),
@@ -26,8 +56,16 @@ def issue_credit(request_id, amount):
 
 
 def schedule_replacement_credit(request_id):
-    """Tool: persist a scheduled replacement ride credit."""
+    if action_exists(request_id, "REPLACEMENT_RIDE_CREDIT"):
+        return {
+            "action_type": "REPLACEMENT_RIDE_CREDIT",
+            "amount": 0.0,
+            "status": "ALREADY_SCHEDULED",
+            "details": "Replacement ride credit was already scheduled.",
+        }
+
     details = "Replacement ride credit scheduled."
+
     save_action(
         request_id,
         "REPLACEMENT_RIDE_CREDIT",
@@ -35,6 +73,7 @@ def schedule_replacement_credit(request_id):
         "SCHEDULED",
         details,
     )
+
     return {
         "action_type": "REPLACEMENT_RIDE_CREDIT",
         "amount": 0.0,
