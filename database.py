@@ -140,3 +140,20 @@ def get_history():
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+def action_exists(request_id, action_type):
+    conn = connect()
+
+    row = conn.execute(
+        """
+        SELECT 1
+        FROM actions
+        WHERE request_id = ?
+          AND action_type = ?
+          AND status IN ('EXECUTED', 'SCHEDULED')
+        LIMIT 1
+        """,
+        (request_id, action_type),
+    ).fetchone()
+    conn.close()
+    return row is not None
