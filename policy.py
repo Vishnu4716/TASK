@@ -14,21 +14,38 @@ SUPPORTED_CATEGORIES = {
 
 def validate_dispute(intent, trip):
     if not trip:
-        return {"supported": False, "reason": "Referenced trip was not found."}
+        return {
+            "supported": False,
+            "reason": "Referenced trip was not found."
+        }
 
     category = str(trip.get("verified_category", "")).upper()
-    supported_categories = SUPPORTED_CATEGORIES.get(intent, set())
+
+    category_map = {
+        "OVERCHARGE": {"SURGE_OVERCHARGE_CONFIRMED"},
+        "SURGE_OVERCHARGE": {"SURGE_OVERCHARGE_CONFIRMED"},
+        "ROUTE_DEVIATION": {"INCORRECT_DROPOFF_LOCATION"},
+        "INCORRECT_DROPOFF": {"INCORRECT_DROPOFF_LOCATION"},
+        "DRIVER_CANCELLED": {"DRIVER_CANCELLED_MIDTRIP"},
+        "RIDER_CANCELLED": {"RIDER_INITIATED_CANCELLATION"},
+    }
+
+    supported_categories = category_map.get(intent, set())
 
     if category in supported_categories:
         return {
             "supported": True,
-            "reason": f"Trip category {category} supports the interpreted reason."
+            "reason": (
+                f"Trip category {category} supports "
+                f"the interpreted reason."
+            )
         }
 
     return {
         "supported": False,
         "reason": (
-            f"Trip category {category} does not support interpreted intent {intent}."
+            f"Trip category {category} does not support "
+            f"interpreted intent {intent}."
         )
     }
 
